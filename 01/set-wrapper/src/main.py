@@ -1,7 +1,7 @@
 import curses
 
 from src.menu import draw
-from src.scenes import MAIN_MENU
+from src.scenes import MAIN_SCENE
 
 
 def init_colors() -> None:
@@ -11,7 +11,7 @@ def init_colors() -> None:
 def main(stdscr: curses.window) -> None:
     init_colors()
 
-    draw(stdscr, MAIN_MENU)
+    draw(stdscr, MAIN_SCENE)
 
 
 if __name__ == "__main__":

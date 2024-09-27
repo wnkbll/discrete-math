@@ -1,26 +1,16 @@
 import curses
-from collections.abc import Callable
+import random
+from random import randint
+from typing import Callable
 
 from src.context import context
-from src.menu import Menu, draw, draw_header
+from src.menu import ConsoleString, Option, Input, Scene, draw
 
 
 def __main_menu_handler(option: str) -> Callable:
     def __wrapper(stdscr: curses.window) -> None:
         if option == "create-set":
-            stdscr.clear()
-            draw_header(stdscr)
-
-            stdscr.addstr(f"\n{SET_CREATION_MENU.title}", curses.color_pair(1))
-
-            stdscr.addstr(5, 0, "Укажите имя множества: ")
-
-            curses.echo()
-            string = stdscr.getstr().decode()
-
-            context.sets[string] = set()
-
-            draw(stdscr, SET_CREATION_MENU)
+            draw(stdscr, SET_NAME_INPUT_SCENE)
             return None
 
         if option == "action":
@@ -32,14 +22,30 @@ def __main_menu_handler(option: str) -> Callable:
     return __wrapper
 
 
+def __set_name_input_handler() -> Callable:
+    def __wrapper(stdscr: curses.window, string: str) -> None:
+        draw(stdscr, SET_CREATION_SCENE, string)
+
+    return __wrapper
+
+
 def __set_creation_handler(option: str) -> Callable:
-    def __wrapper(stdscr: curses.window) -> None:
+    def __wrapper(stdscr: curses.window, string: str) -> None:
         if option == "back":
-            draw(stdscr, MAIN_MENU)
+            draw(stdscr, MAIN_SCENE)
             return None
 
         if option == "random":
-            pass
+            context.sets[string] = set()
+
+            length = random.randint(0, 61)
+            for i in range(length):
+                context.sets[string].add(randint(-30, 30))
+
+            return None
+
+        if option == "keyboard":
+            context.sets[string] = set()
 
         stdscr.addstr(f"\n{option}")
         stdscr.refresh()
@@ -47,19 +53,31 @@ def __set_creation_handler(option: str) -> Callable:
     return __wrapper
 
 
-MAIN_MENU = Menu()
-MAIN_MENU.title = "============ МЕНЮ ============"
-MAIN_MENU.options = {
-    "1": ("Создать новое множество", __main_menu_handler("create-set")),
-    "2": ("Выполнить действие с множествами", __main_menu_handler("action")),
-    "3": ("Список множеств", __main_menu_handler("list-of-sets")),
-}
+MAIN_SCENE = Scene(
+    title="============ МЕНЮ ============",
+    has_input=False,
+    console_strings=[
+        ConsoleString(0, 0, Option("Создать новое множество", "1", __main_menu_handler("create-set"))),
+        ConsoleString(1, 0, Option("Выполнить действие с множествами", "2", __main_menu_handler("action"))),
+        ConsoleString(2, 0, Option("Список множеств", "3", __main_menu_handler("list-of-sets"))),
+    ],
+)
 
-SET_CREATION_MENU = Menu()
-SET_CREATION_MENU.title = "====== СОЗДАТЬ МНОЖЕСТВО ======"
-SET_CREATION_MENU.options = {
-    "1": ("Случайно", __set_creation_handler("random")),
-    "2": ("По условию", __set_creation_handler("keyboard")),
-    "3": ("Перечислением", __set_creation_handler("condition")),
-    "4": ("Назад", __set_creation_handler("back")),
-}
+SET_NAME_INPUT_SCENE = Scene(
+    title="====== СОЗДАТЬ МНОЖЕСТВО ======",
+    has_input=True,
+    console_strings=[
+        ConsoleString(0, 0, Input("Укажите имя множества: ", __set_name_input_handler()))
+    ],
+)
+
+SET_CREATION_SCENE = Scene(
+    title="====== СОЗДАТЬ МНОЖЕСТВО ======",
+    has_input=False,
+    console_strings=[
+        ConsoleString(0, 0, Option("Случайно", "1", __set_creation_handler("random"))),
+        ConsoleString(1, 0, Option("По условию", "2", __set_creation_handler("condition"))),
+        ConsoleString(2, 0, Option("Перечислением", "3", __set_creation_handler("keyboard"))),
+        ConsoleString(3, 0, Option("Назад", "4", __set_creation_handler("back"))),
+    ],
+)

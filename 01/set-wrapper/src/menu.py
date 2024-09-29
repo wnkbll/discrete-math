@@ -30,7 +30,7 @@ def __draw_scene_with_input(stdscr: curses.window, scene: Scene) -> None:
             return console_string.line.event(stdscr, string)
 
 
-def draw(stdscr: curses.window, scene: Scene, *args) -> Any | None:
+def draw(stdscr: curses.window, scene: Scene, *args, **kwargs) -> Any | None:
     stdscr.clear()
     draw_header(stdscr)
 

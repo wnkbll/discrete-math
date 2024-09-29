@@ -4,7 +4,8 @@ from random import randint
 from typing import Callable
 
 from src.context import context
-from src.menu import ConsoleString, Option, Input, Scene, draw
+from src.menu import draw
+from src.types import ConsoleString, Option, Input, Scene
 
 
 def __main_menu_handler(option: str) -> Callable:

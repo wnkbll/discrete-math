@@ -1,36 +1,7 @@
 import curses
-from dataclasses import dataclass
-from typing import Callable, Any
+from typing import Any
 
-
-@dataclass
-class Line:
-    text: str
-
-
-@dataclass
-class Option(Line):
-    keybind: str
-    event: Callable
-
-
-@dataclass
-class Input(Line):
-    event: Callable
-
-
-@dataclass
-class ConsoleString:
-    y: int
-    x: int
-    line: Line
-
-
-@dataclass
-class Scene:
-    title: str
-    has_input: bool
-    console_strings: list[ConsoleString]
+from src.types import Scene, Option, Input
 
 
 def draw_header(stdscr: curses.window) -> None:
@@ -78,13 +49,6 @@ def draw(stdscr: curses.window, scene: Scene, *args) -> Any | None:
             stdscr.addstr(5 + console_string.y, console_string.x, f"{text}")
 
     stdscr.addstr("\n\n[0] - Выход")
-
-    if scene.has_input:
-        curses.echo()
-        string = stdscr.getstr().decode()
-        curses.noecho()
-
-        return string
 
     while True:
         key_input = stdscr.getkey()

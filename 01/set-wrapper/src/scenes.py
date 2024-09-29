@@ -1,6 +1,6 @@
+import copy
 import curses
 import random
-import copy
 from random import randint
 from typing import Callable
 

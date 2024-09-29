@@ -28,7 +28,7 @@ def __main_menu_handler(option: str) -> Callable:
                 __index = index
 
             __list_of_sets_scene.console_strings.append(
-                ConsoleString(__index + 2, 0, Option("Назад", "4", lambda _: draw(stdscr, MAIN_SCENE)))
+                ConsoleString(__index + 2, 0, Option("Назад", "1", lambda _: draw(stdscr, MAIN_SCENE)))
             )
 
             return draw(stdscr, __list_of_sets_scene)
@@ -65,6 +65,9 @@ def __set_creation_handler(option: str) -> Callable:
 
         if option == "keyboard":
             context.sets[string] = set()
+            context.current_set_name = string
+
+            return draw(stdscr, SET_FROM_KEYBOARD_SCENE)
 
         stdscr.addstr(f"\n{option}")
         stdscr.refresh()
@@ -74,6 +77,26 @@ def __set_creation_handler(option: str) -> Callable:
 
 def __set_created_handler(option: str) -> Callable:
     return __main_menu_handler(option)
+
+
+def __set_from_keyboard_handler() -> Callable:
+    def __wrapper(stdscr: curses.window, string: str) -> None:
+        elements = string.strip().split(" ")
+        try:
+            for element in elements:
+                context.sets[context.current_set_name].add(int(element))
+        except ValueError:
+            pass
+
+        __set_created_scene = copy.deepcopy(SET_CREATED_SCENE)
+        __set_created_scene.console_strings[0] = ConsoleString(
+            0, 0,
+            Line(f"Множество {context.current_set_name} = {context.sets[context.current_set_name]} успешно создано")
+        )
+
+        return draw(stdscr, __set_created_scene)
+
+    return __wrapper
 
 
 MAIN_SCENE = Scene(
@@ -113,6 +136,18 @@ SET_CREATED_SCENE = Scene(
         ConsoleString(2, 0, Option("Создать новое множество", "1", __set_created_handler("create-set"))),
         ConsoleString(3, 0, Option("Выполнить действие с множествами", "2", __set_created_handler("action"))),
         ConsoleString(4, 0, Option("Список множеств", "3", __set_created_handler("list-of-sets"))),
+    ],
+)
+
+SET_FROM_KEYBOARD_SCENE = Scene(
+    title="====== СОЗДАТЬ МНОЖЕСТВО ======",
+    has_input=True,
+    console_strings=[
+        ConsoleString(0, 0, Line("Перечислите элементы множества через пробел")),
+        ConsoleString(
+            1, 0, Line(f"Элементы должны принадлежать промежутку [{context.left_border}, {context.right_border}]")
+        ),
+        ConsoleString(3, 0, Input("", __set_from_keyboard_handler()))
     ],
 )
 

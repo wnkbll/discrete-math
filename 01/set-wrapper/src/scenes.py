@@ -22,8 +22,8 @@ def get_condition(conditions: list[str]) -> Condition:
         condition.is_in_integers = True
 
     for _condition in conditions:
-        if "xin[" in _condition:
-            line = _condition.replace("xin[", "").replace("]", "")
+        if "xin(" in _condition:
+            line = _condition.replace("xin(", "").replace(")", "")
             borders = line.split(";")
 
             if int(borders[0]) > condition.left_border:
@@ -255,7 +255,7 @@ SET_FROM_CONDITION_SCENE = Scene(
     has_input=True,
     console_strings=[
         ConsoleString(0, 0, Line("Обозначения: ")),
-        ConsoleString(2, 0, Line("[a;b] - диапазон")),
+        ConsoleString(2, 0, Line("(a;b) - диапазон")),
         ConsoleString(3, 0, Line("x     - элемент множества")),
         ConsoleString(4, 0, Line("in    - принадлежность ")),
         ConsoleString(5, 0, Line("N     - множество натуральных чисел")),

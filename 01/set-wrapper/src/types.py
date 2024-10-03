@@ -3,6 +3,15 @@ from typing import Callable
 
 
 @dataclass
+class Condition:
+    dividers: list[int]
+    left_border: int = -30
+    right_border: int = 30
+    is_in_naturals: bool = False
+    is_in_integers: bool = False
+
+
+@dataclass
 class Line:
     text: str
 

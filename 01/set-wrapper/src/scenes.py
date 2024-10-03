@@ -232,9 +232,9 @@ SET_CREATED_SCENE = Scene(
     has_input=False,
     console_strings=[
         ConsoleString(0, 0, Line("placeholder")),
-        ConsoleString(2, 0, Option("Создать новое множество", "1", __set_created_handler("create-set"))),
-        ConsoleString(3, 0, Option("Выполнить действие с множествами", "2", __set_created_handler("action"))),
-        ConsoleString(4, 0, Option("Список множеств", "3", __set_created_handler("list-of-sets"))),
+        ConsoleString(4, 0, Option("Создать новое множество", "1", __set_created_handler("create-set"))),
+        ConsoleString(5, 0, Option("Выполнить действие с множествами", "2", __set_created_handler("action"))),
+        ConsoleString(6, 0, Option("Список множеств", "3", __set_created_handler("list-of-sets"))),
     ],
 )
 

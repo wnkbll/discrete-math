@@ -37,24 +37,24 @@ def get_condition(conditions: list[str]) -> Condition:
             condition.dividers.append(int(line))
 
         if "x>" in _condition:
-            line = _condition.replace("x>", "")
-            if int(line) > condition.left_border:
-                condition.left_border = int(line) + 1
-
-        if "x>=" in _condition:
-            line = _condition.replace("x>=", "")
-            if int(line) > condition.left_border:
-                condition.left_border = int(line)
+            if "x>=" in _condition:
+                line = _condition.replace("x>=", "")
+                if int(line) > condition.left_border:
+                    condition.left_border = int(line)
+            else:
+                line = _condition.replace("x>", "")
+                if int(line) > condition.left_border:
+                    condition.left_border = int(line) + 1
 
         if "x<" in _condition:
-            line = _condition.replace("x<", "")
-            if int(line) < condition.right_border:
-                condition.left_border = int(line) - 1
-
-        if "x<=" in _condition:
-            line = _condition.replace("x<=", "")
-            if int(line) < condition.right_border:
-                condition.left_border = int(line)
+            if "x<=" in _condition:
+                line = _condition.replace("x<=", "")
+                if int(line) < condition.right_border:
+                    condition.left_border = int(line)
+            else:
+                line = _condition.replace("x<", "")
+                if int(line) < condition.right_border:
+                    condition.left_border = int(line) - 1
 
         if "x=" in _condition:
             line = _condition.replace("x=", "")

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/set-wrapper.iml" filepath="$PROJECT_DIR$/.idea/set-wrapper.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/set-calculator.iml" filepath="$PROJECT_DIR$/.idea/set-calculator.iml" />
     </modules>
   </component>
 </project>

@@ -1,5 +1,4 @@
 import copy
-import curses
 import random
 from typing import Callable
 
@@ -22,8 +21,8 @@ def get_condition(conditions: list[str]) -> Condition:
         condition.is_in_integers = True
 
     for _condition in conditions:
-        if "xin(" in _condition:
-            line = _condition.replace("xin(", "").replace(")", "")
+        if "xin[" in _condition:
+            line = _condition.replace("xin[", "").replace("]", "")
             borders = line.split(";")
 
             if int(borders[0]) > condition.left_border:
@@ -83,80 +82,90 @@ def get_set_from_condition(condition: Condition) -> set:
     return set_
 
 
+def __home_button_handler() -> Callable:
+    def __wrapper() -> None:
+        draw(MAIN_SCENE)
+
+    return __wrapper
+
+
 def __main_menu_handler(option: str) -> Callable:
-    def __wrapper(stdscr: curses.window) -> None:
+    def __wrapper() -> None:
         if option == "create-set":
-            return draw(stdscr, SET_NAME_INPUT_SCENE)
+            return draw(SET_NAME_INPUT_SCENE)
 
         if option == "action":
             sets = context.sets
             __action_scene = copy.deepcopy(ACTION_SCENE)
-            __index = 0
 
             __action_scene.console_strings.append(
-                ConsoleString(0, 0, Line("Существующие множества:")),
+                ConsoleString(Line("Существующие множества:")),
             )
 
             for index, item in enumerate(sets.items()):
                 __action_scene.console_strings.append(
-                    ConsoleString(index + 1, 0, Line(f"{item[0]} = {item[1]}")),
+                    ConsoleString(Line(f"{item[0]} = {item[1]}")),
                 )
-                __index = index
 
             __action_scene.console_strings.append(
-                ConsoleString(__index + 3, 0, Line(">> - принадлежность"))
+                ConsoleString(Line(""))
             )
             __action_scene.console_strings.append(
-                ConsoleString(__index + 4, 0, Line("*  - пересечение"))
+                ConsoleString(Line(">> - принадлежность"))
             )
             __action_scene.console_strings.append(
-                ConsoleString(__index + 5, 0, Line("+  - объединение"))
+                ConsoleString(Line("*  - пересечение"))
             )
             __action_scene.console_strings.append(
-                ConsoleString(__index + 6, 0, Line("-  - разность"))
+                ConsoleString(Line("+  - объединение"))
             )
             __action_scene.console_strings.append(
-                ConsoleString(__index + 7, 0, Line("~  - дополнение до универсума"))
+                ConsoleString(Line("-  - разность"))
             )
             __action_scene.console_strings.append(
-                ConsoleString(__index + 8, 0, Line("^  - симметрическая разность"))
+                ConsoleString(Line("~  - дополнение до универсума"))
             )
             __action_scene.console_strings.append(
-                ConsoleString(__index + 10, 0, Input("", __action_handler()))
+                ConsoleString(Line("^  - симметрическая разность"))
+            )
+            __action_scene.console_strings.append(
+                ConsoleString(Input("", __action_handler()))
             )
 
-            return draw(stdscr, __action_scene)
+            return draw(__action_scene)
 
         if option == "list-of-sets":
             sets = context.sets
             __list_of_sets_scene = copy.deepcopy(LIST_OF_SETS_SCENE)
-            __index = 0
             for index, item in enumerate(sets.items()):
                 __list_of_sets_scene.console_strings.append(
-                    ConsoleString(index, 0, Line(f"{item[0]} = {item[1]}")),
+                    ConsoleString(Line(f"{item[0]} = {item[1]}")),
                 )
-                __index = index
 
             __list_of_sets_scene.console_strings.append(
-                ConsoleString(__index + 2, 0, Option("Назад", "1", lambda _: draw(stdscr, MAIN_SCENE)))
+                ConsoleString(Line(""))
             )
 
-            return draw(stdscr, __list_of_sets_scene)
+            __list_of_sets_scene.console_strings.append(
+                ConsoleString(Option("Назад", "1", __home_button_handler()))
+            )
+
+            return draw(__list_of_sets_scene)
 
     return __wrapper
 
 
 def __set_name_input_handler() -> Callable:
-    def __wrapper(stdscr: curses.window, string: str) -> None:
-        return draw(stdscr, SET_CREATION_SCENE, string)
+    def __wrapper(string: str) -> None:
+        return draw(SET_CREATION_SCENE, string)
 
     return __wrapper
 
 
 def __set_creation_handler(option: str) -> Callable:
-    def __wrapper(stdscr: curses.window, string: str) -> None:
+    def __wrapper(string: str) -> None:
         if option == "back":
-            return draw(stdscr, MAIN_SCENE)
+            return draw(MAIN_SCENE)
 
         if option == "random":
             context.sets[string] = SetWrapper(set())
@@ -166,23 +175,27 @@ def __set_creation_handler(option: str) -> Callable:
                 context.sets[string].add(random.randint(context.left_border, context.right_border))
 
             __set_created_scene = copy.deepcopy(SET_CREATED_SCENE)
-            __set_created_scene.console_strings[0] = ConsoleString(
-                0, 0, Line(f"Множество {string} = {context.sets[string]} успешно создано")
-            )
+            __set_created_scene.console_strings = [
+                ConsoleString(Line(f"Множество {string} = {context.sets[string]} успешно создано")),
+                ConsoleString(Line("")),
+                ConsoleString(Option("Создать новое множество", "1", __set_created_handler("create-set"))),
+                ConsoleString(Option("Выполнить действие с множествами", "2", __set_created_handler("action"))),
+                ConsoleString(Option("Список множеств", "3", __set_created_handler("list-of-sets"))),
+            ]
 
-            return draw(stdscr, __set_created_scene)
+            return draw(__set_created_scene)
 
         if option == "keyboard":
             context.sets[string] = SetWrapper(set())
             context.current_set_name = string
 
-            return draw(stdscr, SET_FROM_KEYBOARD_SCENE)
+            return draw(SET_FROM_KEYBOARD_SCENE)
 
         if option == "condition":
             context.sets[string] = SetWrapper(set())
             context.current_set_name = string
 
-            return draw(stdscr, SET_FROM_CONDITION_SCENE)
+            return draw(SET_FROM_CONDITION_SCENE)
 
     return __wrapper
 
@@ -192,7 +205,7 @@ def __set_created_handler(option: str) -> Callable:
 
 
 def __set_from_keyboard_handler() -> Callable:
-    def __wrapper(stdscr: curses.window, string: str) -> None:
+    def __wrapper(string: str) -> None:
         elements = string.strip().split(" ")
         try:
             for element in elements:
@@ -201,18 +214,22 @@ def __set_from_keyboard_handler() -> Callable:
             pass
 
         __set_created_scene = copy.deepcopy(SET_CREATED_SCENE)
-        __set_created_scene.console_strings[0] = ConsoleString(
-            0, 0,
-            Line(f"Множество {context.current_set_name} = {context.sets[context.current_set_name]} успешно создано")
-        )
+        __set_created_scene.console_strings = [
+            ConsoleString(Line(
+                f"Множество {context.current_set_name} = {context.sets[context.current_set_name]} успешно создано")),
+            ConsoleString(Line("")),
+            ConsoleString(Option("Создать новое множество", "1", __set_created_handler("create-set"))),
+            ConsoleString(Option("Выполнить действие с множествами", "2", __set_created_handler("action"))),
+            ConsoleString(Option("Список множеств", "3", __set_created_handler("list-of-sets"))),
+        ]
 
-        return draw(stdscr, __set_created_scene)
+        return draw(__set_created_scene)
 
     return __wrapper
 
 
 def __set_from_condition_handler() -> Callable:
-    def __wrapper(stdscr: curses.window, string: str) -> None:
+    def __wrapper(string: str) -> None:
         conditions = string.strip().split(",")
         formatted_conditions = []
 
@@ -224,18 +241,22 @@ def __set_from_condition_handler() -> Callable:
         context.sets[context.current_set_name] = get_set_from_condition(condition_)
 
         __set_created_scene = copy.deepcopy(SET_CREATED_SCENE)
-        __set_created_scene.console_strings[0] = ConsoleString(
-            0, 0,
-            Line(f"Множество {context.current_set_name} = {context.sets[context.current_set_name]} успешно создано")
-        )
+        __set_created_scene.console_strings = [
+            ConsoleString(Line(
+                f"Множество {context.current_set_name} = {context.sets[context.current_set_name]} успешно создано")),
+            ConsoleString(Line("")),
+            ConsoleString(Option("Создать новое множество", "1", __set_created_handler("create-set"))),
+            ConsoleString(Option("Выполнить действие с множествами", "2", __set_created_handler("action"))),
+            ConsoleString(Option("Список множеств", "3", __set_created_handler("list-of-sets"))),
+        ]
 
-        return draw(stdscr, __set_created_scene)
+        return draw(__set_created_scene)
 
     return __wrapper
 
 
 def __action_handler() -> Callable:
-    def __wrapper(stdscr: curses.window, string: str) -> None:
+    def __wrapper(string: str) -> None:
         for key in context.sets.keys():
             if key in string:
                 string = string.replace(key, f"context.sets['{key}']")
@@ -244,11 +265,15 @@ def __action_handler() -> Callable:
 
         if isinstance(result, bool):
             __action_done_scene = copy.deepcopy(ACTION_DONE_SCENE)
-            __action_done_scene.console_strings[0] = ConsoleString(
-                0, 0,
-                Line(f"Результат: {result}")
-            )
-            return draw(stdscr, __action_done_scene)
+            __action_done_scene.console_strings = [
+                ConsoleString(Line(f"Результат: {result}")),
+                ConsoleString(Line("")),
+                ConsoleString(Option("Создать новое множество", "1", __action_done_handler("create-set"))),
+                ConsoleString(Option("Выполнить действие с множествами", "2", __action_done_handler("action"))),
+                ConsoleString(Option("Список множеств", "3", __action_done_handler("list-of-sets"))),
+            ]
+
+            return draw(__action_done_scene)
 
         alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         for letter in alphabet:
@@ -258,12 +283,15 @@ def __action_handler() -> Callable:
                 break
 
         __action_done_scene = copy.deepcopy(ACTION_DONE_SCENE)
-        __action_done_scene.console_strings[0] = ConsoleString(
-            0, 0,
-            Line(f"Результат: {context.current_set_name} = {context.sets[context.current_set_name]}")
-        )
+        __action_done_scene.console_strings = [
+            ConsoleString(Line(f"Результат: {context.current_set_name} = {context.sets[context.current_set_name]}")),
+            ConsoleString(Line("")),
+            ConsoleString(Option("Создать новое множество", "1", __action_done_handler("create-set"))),
+            ConsoleString(Option("Выполнить действие с множествами", "2", __action_done_handler("action"))),
+            ConsoleString(Option("Список множеств", "3", __action_done_handler("list-of-sets"))),
+        ]
 
-        return draw(stdscr, __action_done_scene)
+        return draw(__action_done_scene)
 
     return __wrapper
 
@@ -276,9 +304,9 @@ MAIN_SCENE = Scene(
     title="============ МЕНЮ ============",
     has_input=False,
     console_strings=[
-        ConsoleString(0, 0, Option("Создать новое множество", "1", __main_menu_handler("create-set"))),
-        ConsoleString(1, 0, Option("Выполнить действие с множествами", "2", __main_menu_handler("action"))),
-        ConsoleString(2, 0, Option("Список множеств", "3", __main_menu_handler("list-of-sets"))),
+        ConsoleString(Option("Создать новое множество", "1", __main_menu_handler("create-set"))),
+        ConsoleString(Option("Выполнить действие с множествами", "2", __main_menu_handler("action"))),
+        ConsoleString(Option("Список множеств", "3", __main_menu_handler("list-of-sets"))),
     ],
 )
 
@@ -286,7 +314,7 @@ SET_NAME_INPUT_SCENE = Scene(
     title="====== СОЗДАТЬ МНОЖЕСТВО ======",
     has_input=True,
     console_strings=[
-        ConsoleString(0, 0, Input("Укажите имя множества: ", __set_name_input_handler()))
+        ConsoleString(Input("Укажите имя множества: ", __set_name_input_handler()))
     ],
 )
 
@@ -294,10 +322,10 @@ SET_CREATION_SCENE = Scene(
     title="====== СОЗДАТЬ МНОЖЕСТВО ======",
     has_input=False,
     console_strings=[
-        ConsoleString(0, 0, Option("Случайно", "1", __set_creation_handler("random"))),
-        ConsoleString(1, 0, Option("По условию", "2", __set_creation_handler("condition"))),
-        ConsoleString(2, 0, Option("Перечислением", "3", __set_creation_handler("keyboard"))),
-        ConsoleString(3, 0, Option("Назад", "4", __set_creation_handler("back"))),
+        ConsoleString(Option("Случайно", "1", __set_creation_handler("random"))),
+        ConsoleString(Option("По условию", "2", __set_creation_handler("condition"))),
+        ConsoleString(Option("Перечислением", "3", __set_creation_handler("keyboard"))),
+        ConsoleString(Option("Назад", "4", __set_creation_handler("back"))),
     ],
 )
 
@@ -305,10 +333,7 @@ SET_CREATED_SCENE = Scene(
     title="============ МЕНЮ ============",
     has_input=False,
     console_strings=[
-        ConsoleString(0, 0, Line("placeholder")),
-        ConsoleString(4, 0, Option("Создать новое множество", "1", __set_created_handler("create-set"))),
-        ConsoleString(5, 0, Option("Выполнить действие с множествами", "2", __set_created_handler("action"))),
-        ConsoleString(6, 0, Option("Список множеств", "3", __set_created_handler("list-of-sets"))),
+
     ],
 )
 
@@ -316,11 +341,11 @@ SET_FROM_KEYBOARD_SCENE = Scene(
     title="====== СОЗДАТЬ МНОЖЕСТВО ======",
     has_input=True,
     console_strings=[
-        ConsoleString(0, 0, Line("Перечислите элементы множества через пробел")),
+        ConsoleString(Line("Перечислите элементы множества через пробел")),
         ConsoleString(
-            1, 0, Line(f"Элементы должны принадлежать промежутку [{context.left_border}, {context.right_border}]")
+            Line(f"Элементы должны принадлежать промежутку [{context.left_border}, {context.right_border}]")
         ),
-        ConsoleString(3, 0, Input("", __set_from_keyboard_handler()))
+        ConsoleString(Input("", __set_from_keyboard_handler()))
     ],
 )
 
@@ -328,21 +353,21 @@ SET_FROM_CONDITION_SCENE = Scene(
     title="====== СОЗДАТЬ МНОЖЕСТВО ======",
     has_input=True,
     console_strings=[
-        ConsoleString(0, 0, Line("Обозначения: ")),
-        ConsoleString(2, 0, Line("(a;b) - диапазон")),
-        ConsoleString(3, 0, Line("x     - элемент множества")),
-        ConsoleString(4, 0, Line("in    - принадлежность ")),
-        ConsoleString(5, 0, Line("N     - множество натуральных чисел")),
-        ConsoleString(6, 0, Line("Z     - множество целых чисел")),
-        ConsoleString(7, 0, Line("/     - кратно ")),
-        ConsoleString(8, 0, Line(">     - больше")),
-        ConsoleString(9, 0, Line(">=    - больше или равно")),
-        ConsoleString(10, 0, Line("<     - меньше")),
-        ConsoleString(11, 0, Line("<=    - меньше или равно")),
-        ConsoleString(12, 0, Line("=     - равно")),
-        ConsoleString(14, 0, Line("Условия перечислять через запятую")),
-        ConsoleString(15, 0, Line("Пример: x in N, x / 10, x > 19. Результат {20, 30}")),
-        ConsoleString(17, 0, Input("", __set_from_condition_handler())),
+        ConsoleString(Line("Обозначения: ")),
+        ConsoleString(Line("[a;b] - диапазон")),
+        ConsoleString(Line("x     - элемент множества")),
+        ConsoleString(Line("in    - принадлежность ")),
+        ConsoleString(Line("N     - множество натуральных чисел")),
+        ConsoleString(Line("Z     - множество целых чисел")),
+        ConsoleString(Line("/     - кратно ")),
+        ConsoleString(Line(">     - больше")),
+        ConsoleString(Line(">=    - больше или равно")),
+        ConsoleString(Line("<     - меньше")),
+        ConsoleString(Line("<=    - меньше или равно")),
+        ConsoleString(Line("=     - равно")),
+        ConsoleString(Line("Условия перечислять через запятую")),
+        ConsoleString(Line("Пример: x in N, x / 10, x > 19. Результат {20, 30}")),
+        ConsoleString(Input("", __set_from_condition_handler())),
     ],
 )
 
@@ -358,10 +383,7 @@ ACTION_DONE_SCENE = Scene(
     title="============ МЕНЮ ============",
     has_input=False,
     console_strings=[
-        ConsoleString(0, 0, Line("placeholder")),
-        ConsoleString(4, 0, Option("Создать новое множество", "1", __action_done_handler("create-set"))),
-        ConsoleString(5, 0, Option("Выполнить действие с множествами", "2", __action_done_handler("action"))),
-        ConsoleString(6, 0, Option("Список множеств", "3", __action_done_handler("list-of-sets"))),
+
     ],
 )
 

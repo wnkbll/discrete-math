@@ -29,8 +29,6 @@ class Input(Line):
 
 @dataclass
 class ConsoleString:
-    y: int
-    x: int
     line: Line
 
 

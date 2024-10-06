@@ -3,7 +3,7 @@ class Set:
         self.set: set = set_
 
     def __repr__(self):
-        return self.set.__repr__()
+        return self.set.__repr__() if len(self.set) > 0 else "{ null }"
 
     def __rshift__(self, other):
         pass

@@ -1,91 +1,63 @@
-import curses
-from typing import Any
+import os
 
 from src.types import Scene, Option, Input
 
 
-def is_in_max_size(stdscr: curses.window, scene: Scene) -> bool:
-    y, _ = stdscr.getmaxyx()
-
-    for console_string in scene.console_strings:
-        if 5 + console_string.y > y:
-            return False
-
-    return True
+def clear() -> None:
+    os.system("cls") if os.name == "nt" else os.system("clear")
 
 
-def resize_window(stdscr: curses.window, scene: Scene) -> None:
-    y_values = []
-
-    for console_string in scene.console_strings:
-        y_values.append(console_string.y)
-
-    max_y = max(y_values)
-
-    _, x = stdscr.getmaxyx()
-    curses.resize_term(max_y + 15, x)
+def __draw_header() -> None:
+    print("Лабораторная работа #1 | Теория множеств: основные операции")
+    print("Source code: https://github.com/wnkbll/set-wrapper")
 
 
-def draw_header(stdscr: curses.window) -> None:
-    stdscr.addstr("Лабораторная работа #1 | Теория множеств: основные операции\n")
-    stdscr.addstr("Source code: https://github.com/wnkbll/set-wrapper\n")
-
-
-def __draw_scene_with_input(stdscr: curses.window, scene: Scene) -> None:
-    curses.echo()
-
+def __draw_scene_with_input(scene: Scene) -> None:
     for console_string in scene.console_strings:
         line = console_string.line
         text = line.text
         if isinstance(line, Option):
             key = line.keybind
-            stdscr.addstr(5 + console_string.y, console_string.x, f"[{key}] - {text}")
+            print(f"[{key}] - {text}")
         else:
-            stdscr.addstr(5 + console_string.y, console_string.x, f"{text}")
+            print(f"{text}")
 
-    string = stdscr.getstr().decode()
-
-    curses.noecho()
+    response = input("\n>> ")
 
     for console_string in scene.console_strings:
         if isinstance(console_string.line, Input):
-            return console_string.line.event(stdscr, string)
+            return console_string.line.event(response)
 
 
-def draw(stdscr: curses.window, scene: Scene, *args) -> Any | None:
-    if not is_in_max_size(stdscr, scene):
-        stdscr.clear()
-        resize_window(stdscr, scene)
-        stdscr.refresh()
+def draw(scene: Scene, *args):
+    clear()
+    __draw_header()
 
-    stdscr.clear()
-    draw_header(stdscr)
-
-    stdscr.addstr(f"\n{scene.title}")
+    print(f"\n{scene.title}\n")
 
     if scene.has_input:
-        return __draw_scene_with_input(stdscr, scene)
+        return __draw_scene_with_input(scene)
 
     for console_string in scene.console_strings:
         line = console_string.line
         text = line.text
         if isinstance(line, Option):
             key = line.keybind
-            stdscr.addstr(5 + console_string.y, console_string.x, f"[{key}] - {text}")
+            print(f"[{key}] - {text}")
         else:
-            stdscr.addstr(5 + console_string.y, console_string.x, f"{text}")
+            print(f"{text}")
 
-    stdscr.addstr("\n\n[0] - Выход")
+    print("\n\n[0] - Выход")
 
     while True:
-        key_input = stdscr.getkey()
+        response = input("\n>> ")
 
-        if key_input == "0":
-            curses.endwin()
+        if response == "0":
+            clear()
             return None
 
         for console_string in scene.console_strings:
             line = console_string.line
             if isinstance(line, Option):
-                if key_input == line.keybind:
-                    return line.event(stdscr, *args)
+                if response == line.keybind:
+                    return line.event(*args)

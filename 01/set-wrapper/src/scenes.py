@@ -1,11 +1,11 @@
 import copy
 import curses
 import random
-from random import randint
 from typing import Callable
 
 from src.context import context
 from src.menu import draw
+from src.set_wrapper import SetWrapper
 from src.types import ConsoleString, Line, Option, Input, Scene, Condition
 
 
@@ -89,7 +89,43 @@ def __main_menu_handler(option: str) -> Callable:
             return draw(stdscr, SET_NAME_INPUT_SCENE)
 
         if option == "action":
-            pass
+            sets = context.sets
+            __action_scene = copy.deepcopy(ACTION_SCENE)
+            __index = 0
+
+            __action_scene.console_strings.append(
+                ConsoleString(0, 0, Line("Существующие множества:")),
+            )
+
+            for index, item in enumerate(sets.items()):
+                __action_scene.console_strings.append(
+                    ConsoleString(index + 1, 0, Line(f"{item[0]} = {item[1]}")),
+                )
+                __index = index
+
+            __action_scene.console_strings.append(
+                ConsoleString(__index + 3, 0, Line(">> - принадлежность"))
+            )
+            __action_scene.console_strings.append(
+                ConsoleString(__index + 4, 0, Line("*  - пересечение"))
+            )
+            __action_scene.console_strings.append(
+                ConsoleString(__index + 5, 0, Line("+  - объединение"))
+            )
+            __action_scene.console_strings.append(
+                ConsoleString(__index + 6, 0, Line("-  - разность"))
+            )
+            __action_scene.console_strings.append(
+                ConsoleString(__index + 7, 0, Line("~  - дополнение до универсума"))
+            )
+            __action_scene.console_strings.append(
+                ConsoleString(__index + 8, 0, Line("^  - симметрическая разность"))
+            )
+            __action_scene.console_strings.append(
+                ConsoleString(__index + 10, 0, Input("", __action_handler()))
+            )
+
+            return draw(stdscr, __action_scene)
 
         if option == "list-of-sets":
             sets = context.sets
@@ -123,11 +159,11 @@ def __set_creation_handler(option: str) -> Callable:
             return draw(stdscr, MAIN_SCENE)
 
         if option == "random":
-            context.sets[string] = set()
+            context.sets[string] = SetWrapper(set())
 
             length = random.randint(0, 20)
             for i in range(length):
-                context.sets[string].add(randint(context.left_border, context.right_border))
+                context.sets[string].add(random.randint(context.left_border, context.right_border))
 
             __set_created_scene = copy.deepcopy(SET_CREATED_SCENE)
             __set_created_scene.console_strings[0] = ConsoleString(
@@ -137,13 +173,13 @@ def __set_creation_handler(option: str) -> Callable:
             return draw(stdscr, __set_created_scene)
 
         if option == "keyboard":
-            context.sets[string] = set()
+            context.sets[string] = SetWrapper(set())
             context.current_set_name = string
 
             return draw(stdscr, SET_FROM_KEYBOARD_SCENE)
 
         if option == "condition":
-            context.sets[string] = set()
+            context.sets[string] = SetWrapper(set())
             context.current_set_name = string
 
             return draw(stdscr, SET_FROM_CONDITION_SCENE)
@@ -196,6 +232,44 @@ def __set_from_condition_handler() -> Callable:
         return draw(stdscr, __set_created_scene)
 
     return __wrapper
+
+
+def __action_handler() -> Callable:
+    def __wrapper(stdscr: curses.window, string: str) -> None:
+        for key in context.sets.keys():
+            if key in string:
+                string = string.replace(key, f"context.sets['{key}']")
+
+        result = eval(string)
+
+        if isinstance(result, bool):
+            __action_done_scene = copy.deepcopy(ACTION_DONE_SCENE)
+            __action_done_scene.console_strings[0] = ConsoleString(
+                0, 0,
+                Line(f"Результат: {result}")
+            )
+            return draw(stdscr, __action_done_scene)
+
+        alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        for letter in alphabet:
+            if letter not in context.sets.keys():
+                context.sets[letter] = result
+                context.current_set_name = letter
+                break
+
+        __action_done_scene = copy.deepcopy(ACTION_DONE_SCENE)
+        __action_done_scene.console_strings[0] = ConsoleString(
+            0, 0,
+            Line(f"Результат: {context.current_set_name} = {context.sets[context.current_set_name]}")
+        )
+
+        return draw(stdscr, __action_done_scene)
+
+    return __wrapper
+
+
+def __action_done_handler(option: str) -> Callable:
+    return __main_menu_handler(option)
 
 
 MAIN_SCENE = Scene(
@@ -269,6 +343,25 @@ SET_FROM_CONDITION_SCENE = Scene(
         ConsoleString(14, 0, Line("Условия перечислять через запятую")),
         ConsoleString(15, 0, Line("Пример: x in N, x / 10, x > 19. Результат {20, 30}")),
         ConsoleString(17, 0, Input("", __set_from_condition_handler())),
+    ],
+)
+
+ACTION_SCENE = Scene(
+    title="==== ОПЕРАЦИЯ С МНОЖЕСТВАМИ ====",
+    has_input=True,
+    console_strings=[
+
+    ],
+)
+
+ACTION_DONE_SCENE = Scene(
+    title="============ МЕНЮ ============",
+    has_input=False,
+    console_strings=[
+        ConsoleString(0, 0, Line("placeholder")),
+        ConsoleString(4, 0, Option("Создать новое множество", "1", __action_done_handler("create-set"))),
+        ConsoleString(5, 0, Option("Выполнить действие с множествами", "2", __action_done_handler("action"))),
+        ConsoleString(6, 0, Option("Список множеств", "3", __action_done_handler("list-of-sets"))),
     ],
 )
 

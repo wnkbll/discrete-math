@@ -61,7 +61,7 @@ def draw(stdscr: curses.window, scene: Scene, *args) -> Any | None:
     stdscr.clear()
     draw_header(stdscr)
 
-    stdscr.addstr(f"\n{scene.title}", curses.color_pair(1))
+    stdscr.addstr(f"\n{scene.title}")
 
     if scene.has_input:
         return __draw_scene_with_input(stdscr, scene)

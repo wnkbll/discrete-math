@@ -32,7 +32,7 @@ def get_matrix_from_file(file: Path, lines: int, columns: int) -> Matrix:
 def get_output(properties) -> str:
     return (
         f"This relation is:\n"
-        f"\t{ "- " + properties["reflexivity"] if properties["reflexivity"] is not None else ""}"
+        f"\t{"- " + properties["reflexivity"] if properties["reflexivity"] is not None else ""}"
     )
 
 

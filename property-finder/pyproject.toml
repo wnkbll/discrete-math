@@ -1,12 +1,15 @@
 [tool.poetry]
 name = "property-finder"
 version = "0.1.0"
-description = ""
+description = "Define list of properties for given relation on sets"
 authors = ["wnkbll <arzhevitin.g@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
+
+[tool.poetry.scripts]
+property = "property_finder.cli:main"
 
 
 [build-system]

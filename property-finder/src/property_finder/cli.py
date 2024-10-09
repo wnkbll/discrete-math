@@ -31,8 +31,9 @@ def get_matrix_from_file(file: Path, lines: int, columns: int) -> Matrix:
 
 def get_output(matrix: Matrix) -> str:
     return (
-        f"This relation is:\n"
-        f"\t{"- " + matrix.reflexivity if matrix.reflexivity is not None else ""}"
+        f"This relation is:"
+        f"\n\t{"- " + matrix.reflexivity if matrix.reflexivity is not None else ""}"
+        f"\n\t{"- " + matrix.symmetry}"
     )
 
 

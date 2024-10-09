@@ -16,3 +16,35 @@ class Matrix:
             return "irreflexive"
 
         return None
+
+    @property
+    def symmetry(self) -> str:
+        is_symmetrical: bool = True
+
+        for line in range(self.lines):
+            for column in range(self.columns):
+                if line == column:
+                    continue
+
+                if self.array[line][column] != self.array[column][line]:
+                    is_symmetrical = False
+                    break
+
+        if is_symmetrical:
+            return "symmetrical"
+
+        is_antisymmetric: bool = True
+
+        for line in range(self.lines):
+            for column in range(self.columns):
+                if line == column:
+                    continue
+
+                if self.array[line][column] == self.array[column][line]:
+                    is_antisymmetric = False
+                    break
+
+        if is_antisymmetric:
+            return "antisymmetric"
+
+        return "asymmetrical"

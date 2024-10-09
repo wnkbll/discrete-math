@@ -16,11 +16,3 @@ class Matrix:
             return "irreflexive"
 
         return None
-
-    @property
-    def properties(self) -> dict[str, str | None]:
-        result: dict[str, str | None] = {
-            "reflexivity": self.reflexivity,
-        }
-
-        return result

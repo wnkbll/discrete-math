@@ -29,10 +29,10 @@ def get_matrix_from_file(file: Path, lines: int, columns: int) -> Matrix:
     return Matrix(array)
 
 
-def get_output(properties) -> str:
+def get_output(matrix: Matrix) -> str:
     return (
         f"This relation is:\n"
-        f"\t{"- " + properties["reflexivity"] if properties["reflexivity"] is not None else ""}"
+        f"\t{"- " + matrix.reflexivity if matrix.reflexivity is not None else ""}"
     )
 
 
@@ -43,10 +43,7 @@ def main(file: Path = Path("matrix.txt"), lines: int = 6, columns: int = 6):
 
     try:
         matrix = get_matrix_from_file(file, lines, columns)
-
-        properties = matrix.properties
-        output = get_output(properties)
-
+        output = get_output(matrix)
         print(output)
     except ParamError:
         print("Check file path and/or line and column params")

@@ -34,6 +34,7 @@ def get_output(matrix: Matrix) -> str:
         f"This relation is:"
         f"\n\t{"- " + matrix.reflexivity if matrix.reflexivity is not None else ""}"
         f"\n\t{"- " + matrix.symmetry}"
+        f"\n\t{"- " + matrix.transitivity if matrix.transitivity is not None else ""}"
     )
 
 

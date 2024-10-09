@@ -23,8 +23,7 @@ class Matrix:
 
         for line in range(self.lines):
             for column in range(self.columns):
-                if line == column:
-                    continue
+                if line == column: continue
 
                 if self.array[line][column] != self.array[column][line]:
                     is_symmetrical = False
@@ -37,8 +36,7 @@ class Matrix:
 
         for line in range(self.lines):
             for column in range(self.columns):
-                if line == column:
-                    continue
+                if line == column: continue
 
                 if self.array[line][column] == self.array[column][line]:
                     is_antisymmetric = False
@@ -48,3 +46,16 @@ class Matrix:
             return "antisymmetric"
 
         return "asymmetrical"
+
+    @property
+    def transitivity(self) -> str | None:
+        for x in range(self.lines):
+            for y in range(self.columns):
+                if x == y: continue
+
+                for z in range(self.lines):
+                    if z == x or z == x: continue
+
+                    if self.array[x][y] and self.array[y][z] and not self.array[x][y]: return None
+
+        return "transitive"

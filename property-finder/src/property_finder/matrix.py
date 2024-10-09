@@ -8,28 +8,19 @@ class Matrix:
         self.main_diagonal: list[int | float] = [array[i][i] for i in range(self.lines)]
 
     @property
-    def reflexivity(self) -> bool:
+    def reflexivity(self) -> str | None:
         if sum(self.main_diagonal) == self.columns:
-            return True
+            return "reflexive"
 
-        return False
-
-    @property
-    def irreflexivity(self) -> bool:
         if sum(self.main_diagonal) == 0:
-            return True
+            return "irreflexive"
 
-        return False
+        return None
 
     @property
     def properties(self) -> dict[str, str | None]:
-        result: dict[str, str | None] = {}
-
-        if self.reflexivity:
-            result["reflexivity"] = "reflexive"
-        elif self.irreflexivity:
-            result["reflexivity"] = "irreflexive"
-        else:
-            result["reflexivity"] = None
+        result: dict[str, str | None] = {
+            "reflexivity": self.reflexivity,
+        }
 
         return result
